@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="200" height="100" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="bg_art" value="background.png"/>
+  <property name="bg_music" value="music/silly.mp3"/>
+  <property name="fg_art" value="hill.png"/>
+ </properties>
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <layer name="Tiles" width="200" height="100">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3czU7CUBSF0TIA48DEgQ58/xdVIiQE7ukPXHoOsFbyjTRQaHcUJA4DAAAAAAAAAAAAAAAAAABc2h4CLtkHxOwDYvYBMfuAmH1AzD4gZh8Qsw+I2QfE7ANi9gEx+4CYfUDMPiBmHxCzD4jZB8TsA2L2ATH7gJh9QMw+IGYfELMPiNkHxOwDYvYBMfuAmH3w6j5POmcfVPSz0v3sN/Fx0vlG7IMKNn+9jXSLsdudyj7Itt/GdqJbfDeaur+e9w/XmrONe1yfX8OyzZDj+HvFe/aBJJi7jbWuz7HN0N/U787n10fVjcx9rbzkNfWSbWRen8fNPJtbXpP16nhup76+nfG9c16nZj/ea56b6vt4Vkuf/0fpFR+zffSXfT7twz4qyz6f92o3Uvax2cfjyD6fso/Kss+n+jb2c3M39LHpdDunrvmczBqfrck+n+rbWu+ptWS/11fh/UNpX0v2MUlVask+JqlKLdnHJFWpJfuYpCq1ZB+TVKVX+7urJEmSJEmSVLHW/3SR9B8AAAAAAAAAAAAAAAAAAAAAAAAANfwCLfpEO4A4AQA=
+  </data>
+ </layer>
+ <layer name="Ladders" width="200" height="100">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3TMQ0AMAzAsAIYf7z7K+XeDhtBnswAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwndcB8DF/QPMHNH9A8wc0f0DzBzR/QPMHNH9A8wcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXdXdxg4A4AQA=
+  </data>
+ </layer>
+ <objectgroup name="Objects" width="200" height="100">
+  <object type="Decoration" x="0" y="640" width="224" height="240">
+   <properties>
+    <property name="animation" value="house"/>
+   </properties>
+  </object>
+  <object name="movement text" type="Text" x="240" y="640" width="336" height="80">
+   <properties>
+    <property name="font_size" value="18"/>
+    <property name="text" value="Use the arrow keys to move around and jump."/>
+   </properties>
+  </object>
+  <object name="start" type="StartPoint" x="240" y="816" width="32" height="64"/>
+  <object name="mines text" type="Text" x="1584" y="624" width="208" height="112">
+   <properties>
+    <property name="font_size" value="18"/>
+    <property name="text" value="Watch out for those land mines!"/>
+   </properties>
+  </object>
+  <object type="Button" gid="14" x="2240" y="768"/>
+  <object name="bridge" type="Bridge" x="2272" y="880" width="96" height="96">
+   <properties>
+    <property name="state" value="up"/>
+   </properties>
+  </object>
+  <object name="button helper text" type="Text" x="2368" y="736" width="224" height="144">
+   <properties>
+    <property name="font_size" value="18"/>
+    <property name="text" value="Hit the button to activate the bridge."/>
+   </properties>
+  </object>
+  <object name="sign post" type="Decoration" x="2976" y="944" width="80" height="32">
+   <properties>
+    <property name="img" value="winnar.png"/>
+   </properties>
+  </object>
+  <object name="victory" type="Victory" x="2976" y="880" width="224" height="96"/>
+ </objectgroup>
+ <objectgroup name="PlayerLayer" width="200" height="100"/>
+</map>
