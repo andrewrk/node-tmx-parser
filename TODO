@@ -1,0 +1,10 @@
+ * test for ellipse
+ * test for polygon
+ * test for embedded tileset
+ * tileset terraintypes
+ * add tests for edge cases
+ * support flipping horizontally / vertically / diagonally
+ * base64 raw
+ * base64 gzip
+ * base64 zlib
+ * read data for images
