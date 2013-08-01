@@ -8,8 +8,8 @@ in node.js or [browserify](http://browserify.org/).
 ```js
 var tmx = require('tmx-parser');
 
-// if you have a string
-tmx.parse(xmlString, function(err, map) {
+// if you have a string (pathToFile is for resolving tilesets if necessary)
+tmx.parse(xmlString, pathToFile, function(err, map) {
   if (err) throw err;
   console.log(map);
 });
@@ -143,7 +143,7 @@ The `objects` array looks like this:
        polyline: null } ] }
 ```
 
-TileLayer objects have a `tileAt(x, y)` property.
+TileLayer objects have a `tileAt(x, y)` method.
 Otherwise you can access `layer.tiles` in row-major order.
 
 See the bottom of index.js for more information.
