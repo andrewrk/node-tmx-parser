@@ -365,7 +365,16 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      // TODO
+      var buf = new Buffer(text, 'base64');
+      var expectedCount = map.width * map.height * 4;
+      if (buf.length !== expectedCount) {
+        error(new Error("Expected " + expectedCount +
+              " bytes of tile data; received " + buf.length));
+        return;
+      }
+      for (var i = 0; i < expectedCount; i += 4) {
+        saveTile(buf.readUInt32LE(i));
+      }
     },
   };
   states[STATE_TILE_DATA_B64_GZIP] = {

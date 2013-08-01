@@ -56,7 +56,6 @@ describe("tilesets", function() {
       done();
     });
   });
-  it("external tileset");
   it("multiple tilesets");
 });
 
