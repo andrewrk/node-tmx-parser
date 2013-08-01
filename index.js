@@ -83,11 +83,11 @@ function parse(content, cb) {
           ts.spacing = int(tag.attributes.SPACING);
           ts.margin = int(tag.attributes.MARGIN);
 
-          map.tileSet = ts;
+          map.tileSets.push(ts);
           state = STATE_MAP_TILESET;
           break;
         case 'LAYER':
-          layer = new TileLayer(map.width * map.height);
+          layer = new TileLayer(map);
           tileIndex = 0;
           layer.name = tag.attributes.NAME;
           layer.opacity = float(tag.attributes.OPACITY, 1);
@@ -121,17 +121,18 @@ function parse(content, cb) {
   };
   states[STATE_MAP_TILESET] = {
     opentag: function(tag) {
+      var lastTileSet = map.tileSets[map.tileSets.length - 1];
       switch (tag.name) {
         case 'TILEOFFSET':
-          map.tileSet.tileOffset.x = int(tag.attributes.X);
-          map.tileSet.tileOffset.y = int(tag.attributes.Y);
+          lastTileSet.tileOffset.x = int(tag.attributes.X);
+          lastTileSet.tileOffset.y = int(tag.attributes.Y);
           waitForClose();
           break;
         case 'PROPERTIES':
-          collectProperties(map.tileSet.properties);
+          collectProperties(lastTileSet.properties);
           break;
         case 'IMAGE':
-          map.tileSet.image = collectImage(tag);
+          lastTileSet.image = collectImage(tag);
           break;
         case 'TERRAINTYPES':
           // TODO
@@ -142,7 +143,7 @@ function parse(content, cb) {
           tile.id = int(tag.attributes.ID);
           tile.terrain = tag.attributes.TERRAIN;
           tile.probability = float(tag.attributes.PROBABILITY);
-          map.tileSet.tiles.push(tile);
+          lastTileSet.tiles.push(tile);
           state = STATE_TILE;
           break;
         default:
@@ -178,7 +179,8 @@ function parse(content, cb) {
   };
   states[STATE_TILE] = {
     opentag: function(tag) {
-      var lastTile = map.tileSet.tiles[map.tileSet.tiles.length - 1];
+      var lastTileSet = map.tileSets[map.tileSets.length - 1];
+      var lastTile = lastTileSet.tiles[lastTileSet.tiles.length - 1];
       if (tag.name === 'PROPERTIES') {
         collectProperties(lastTile.properties);
       } else if (tag.name === 'IMAGE') {
@@ -492,26 +494,25 @@ function float(value, defaultValue) {
 function TmxMap() {
   this.version = null;
   this.orientation = "orthogonal";
-  this.width = null;
-  this.height = null;
-  this.tileWidth = null;
-  this.tileHeight = null;
+  this.width = 0;
+  this.height = 0;
+  this.tileWidth = 0;
+  this.tileHeight = 0;
   this.backgroundColor = null;
 
   this.layers = [];
   this.properties = {};
-  this.tileSet = null;
+  this.tileSets = [];
 }
 
-
 function TileSet() {
-  this.firstGid = null;
-  this.source = null;
-  this.name = null;
-  this.tileWidth = null;
-  this.tileHeight = null;
-  this.spacing = null;
-  this.margin = null;
+  this.firstGid = 0;
+  this.source = "";
+  this.name = "";
+  this.tileWidth = 0;
+  this.tileHeight = 0;
+  this.spacing = 0;
+  this.margin = 0;
   this.tileOffset = {x: 0, y: 0};
   this.properties = {};
   this.image = null;
@@ -520,21 +521,23 @@ function TileSet() {
 
 function Image() {
   this.format = null;
-  this.source = null;
+  this.source = "";
   this.trans = null;
-  this.width = null;
-  this.height = null;
+  this.width = 0;
+  this.height = 0;
 }
 
 function Tile() {
-  this.id = null;
+  this.id = 0;
   this.terrain = null;
   this.probability = null;
   this.properties = {};
   this.image = null;
 }
 
-function TileLayer(tileCount) {
+function TileLayer(map) {
+  var tileCount = map.width * map.height;
+  this.map = map;
   this.type = "tile";
   this.name = null;
   this.opacity = 1;
@@ -545,6 +548,18 @@ function TileLayer(tileCount) {
   this.verticalFlips = new Array(tileCount);
   this.diagonalFlips = new Array(tileCount);
 }
+
+// TODO instead of this, resolve all tiles when loading the level.
+TileLayer.prototype.tileAt = function(x, y) {
+  var globalTileId = this.tiles[y * this.map.width + x];
+  for (var i = this.map.tileSets.length - 1; i >= 0; i -= 1) {
+    var tileSet = this.map.tileSets[i];
+    if (tileSet.firstGid <= globalTileId) {
+      return tileSet.tiles[globalTileId - tileSet.firstGid];
+    }
+  }
+  return globalTileId
+};
 
 function ObjectLayer() {
   this.type = "object";
