@@ -741,6 +741,10 @@ TileLayer.prototype.tileAt = function(x, y) {
   return this.tiles[y * this.map.width + x];
 };
 
+TileLayer.prototype.setTileAt = function(x, y, tile) {
+  this.tiles[y * this.map.width + x] = tile;
+};
+
 function ObjectLayer() {
   this.type = "object";
   this.name = null;
