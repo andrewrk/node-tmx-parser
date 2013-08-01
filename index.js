@@ -1,7 +1,7 @@
 var sax = require('sax');
 var fs = require('fs');
-var Batch = require('batch2');
 var path = require('path');
+var zlib = require('zlib');
 
 exports.readFile = defaultReadFile;
 exports.parseFile = parseFile;
@@ -58,11 +58,11 @@ function parse(content, pathToFile, cb) {
   var layer;
   var object;
   var terrain;
+  var pend = new Pend();
   // this holds the numerical tile ids
   // later we use it to resolve the real tiles
   var unresolvedLayers = [];
   var unresolvedLayer;
-  var unresolvedTileSets = [];
   states[STATE_START] = {
     opentag: function(tag) {
       if (tag.name === 'MAP') {
@@ -365,16 +365,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var buf = new Buffer(text, 'base64');
-      var expectedCount = map.width * map.height * 4;
-      if (buf.length !== expectedCount) {
-        error(new Error("Expected " + expectedCount +
-              " bytes of tile data; received " + buf.length));
-        return;
-      }
-      for (var i = 0; i < expectedCount; i += 4) {
-        saveTile(buf.readUInt32LE(i));
-      }
+      unpackTileBytes(new Buffer(text, 'base64'));
     },
   };
   states[STATE_TILE_DATA_B64_GZIP] = {
@@ -385,7 +376,21 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      // TODO
+      var zipped = new Buffer(text, 'base64');
+      var oldUnresolvedLayer = unresolvedLayer;
+      var oldLayer = layer;
+      pend.go(function(cb) {
+        zlib.gunzip(zipped, function(err, buf) {
+          if (err) {
+            cb(err);
+            return;
+          }
+          unresolvedLayer = oldUnresolvedLayer;
+          layer = oldLayer;
+          unpackTileBytes(buf);
+          cb();
+        });
+      });
     },
   };
   states[STATE_TILE_DATA_B64_ZLIB] = {
@@ -396,7 +401,21 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      // TODO
+      var zipped = new Buffer(text, 'base64');
+      var oldUnresolvedLayer = unresolvedLayer;
+      var oldLayer = layer;
+      pend.go(function(cb) {
+        zlib.inflate(zipped, function(err, buf) {
+          if (err) {
+            cb(err);
+            return;
+          }
+          layer = oldLayer;
+          unresolvedLayer = oldUnresolvedLayer;
+          unpackTileBytes(buf);
+          cb();
+        });
+      });
     },
   };
   states[STATE_TERRAIN_TYPES] = {
@@ -441,22 +460,13 @@ function parse(content, pathToFile, cb) {
     states[state].text(text);
   };
   parser.onend = function() {
-    if (unresolvedTileSets.length === 0) {
-      cb(null, topLevelObject);
-      return;
-    }
-    var batch = new Batch();
-    unresolvedTileSets.forEach(function(unresolvedTileSet) {
-      batch.push(function(cb) {
-        resolveTileSet(unresolvedTileSet, cb);
-      });
-    });
-    batch.end(function(err, results) {
+    // wait until async stuff has finished
+    pend.wait(function(err) {
       if (err) {
         cb(err);
         return;
       }
-      // use the resolved tile sets to resolve the layers
+      // now all tilesets are resolved and all data is decoded
       unresolvedLayers.forEach(resolveLayer);
       cb(null, topLevelObject);
     });
@@ -504,7 +514,11 @@ function parse(content, pathToFile, cb) {
     tileSet.spacing = int(tag.attributes.SPACING);
     tileSet.margin = int(tag.attributes.MARGIN);
 
-    if (tileSet.source) unresolvedTileSets.push(tileSet);
+    if (tileSet.source) {
+      pend.go(function(cb) {
+        resolveTileSet(tileSet, cb);
+      });
+    }
 
     state = STATE_TILESET;
     tileSetNextState = nextState;
@@ -556,7 +570,55 @@ function parse(content, pathToFile, cb) {
       }
     }
   }
+
+  function unpackTileBytes(buf) {
+    var expectedCount = map.width * map.height * 4;
+    if (buf.length !== expectedCount) {
+      error(new Error("Expected " + expectedCount +
+            " bytes of tile data; received " + buf.length));
+      return;
+    }
+    tileIndex = 0;
+    for (var i = 0; i < expectedCount; i += 4) {
+      saveTile(buf.readUInt32LE(i));
+    }
+  }
 }
+
+function Pend() {
+  this.pending = 0;
+  this.listeners = [];
+  this.error = null;
+}
+
+Pend.prototype.go = function(fn) {
+  pendGo(this, fn);
+};
+
+function pendGo(self, fn) {
+  self.pending += 1;
+  fn(onCb);
+  function onCb(err) {
+    self.error = self.error || err;
+    self.pending -= 1;
+    if (self.pending < 0) throw new Error("Callback called twice.");
+    if (self.pending === 0) {
+      self.listeners.forEach(cbListener);
+      self.listeners = [];
+    }
+  }
+  function cbListener(listener) {
+    listener(self.error);
+  }
+}
+
+Pend.prototype.wait = function(cb) {
+  if (this.pending === 0) {
+    cb(this.error);
+  } else {
+    this.listeners.push(cb);
+  }
+};
 
 function defaultReadFile(name, cb) {
   fs.readFile(name, { encoding: 'utf8' }, cb);

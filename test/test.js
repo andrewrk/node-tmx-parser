@@ -63,7 +63,6 @@ describe("misc.", function() {
   it("ellipse object");
   it("polygon object");
   it("polyline object");
-  it("polyline object");
 });
 
 function generateEncodingTypeTest(filename) {
