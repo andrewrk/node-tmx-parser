@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="100" height="100" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="red" tilewidth="33" tileheight="31" spacing="2" margin="1">
+  <image source="tiles.png" width="64" height="192"/>
+  <tile id="0">
+   <properties>
+    <property name="good" value="nope"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="6" name="blue" tilewidth="32" tileheight="32">
+  <image source="tiles.png" width="64" height="192"/>
+  <tile id="4">
+   <properties>
+    <property name="good" value="yes"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztzrEJAAAIwDBd/f9g/UKUBLo3AgAAAAD+yqm2JwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBTGoIyAAw=
+  </data>
+ </layer>
+</map>

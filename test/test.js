@@ -45,7 +45,7 @@ describe("tilesets", function() {
       assert.strictEqual(map.tileSets[0].terrainTypes[2].name, "rock");
       assert.strictEqual(map.tileSets[0].terrainTypes[3].name, "sand");
 
-      assert.strictEqual(map.tileSets[0].tiles.length, 40);
+      assert.strictEqual(map.tileSets[0].tiles.length, 45);
       assert.strictEqual(map.tileSets[0].tiles[0].id, 0);
 
       assert.strictEqual(map.tileSets[0].tiles[0].terrain.length, 4);
@@ -56,7 +56,24 @@ describe("tilesets", function() {
       done();
     });
   });
-  it("multiple tilesets");
+  it("multiple tilesets", function(done) {
+    var target = path.join(__dirname, "multiple-tile-sets.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+      assert.strictEqual(map.tileSets.length, 2);
+
+      assert.strictEqual(map.tileSets[0].name, "red");
+      assert.strictEqual(map.tileSets[0].tiles[0].properties.good, "nope");
+      assert.strictEqual(map.tileSets[1].name, "blue");
+      assert.strictEqual(map.tileSets[1].tiles[4].properties.good, "yes");
+
+      assert.strictEqual(map.layers[0].tileAt(16, 12), map.tileSets[0].tiles[0]);
+      assert.strictEqual(map.layers[0].tileAt(17, 12), map.tileSets[1].tiles[4]);
+      assert.equal(map.layers[0].tileAt(20, 12), null);
+
+      done();
+    });
+  });
 });
 
 describe("weird shapes", function() {

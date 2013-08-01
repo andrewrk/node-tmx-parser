@@ -160,7 +160,7 @@ function parse(content, pathToFile, cb) {
             tile.terrain = indexes.map(resolveTerrain);
           }
           tile.probability = float(tag.attributes.PROBABILITY);
-          tileSet.tiles.push(tile);
+          tileSet.tiles[tile.id] = tile;
           state = STATE_TILE;
           break;
         default:
@@ -566,6 +566,7 @@ function parse(content, pathToFile, cb) {
         var tileSet = map.tileSets[tileSetIndex];
         if (tileSet.firstGid <= globalTileId) {
           unresolvedLayer.layer.tiles[i] = tileSet.tiles[globalTileId - tileSet.firstGid];
+          break;
         }
       }
     }
