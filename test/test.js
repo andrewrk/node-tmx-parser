@@ -11,8 +11,32 @@ describe("tile encoding types", function() {
 });
 
 describe("real world examples", function() {
-  it("vapor test chamber");
-  it("lemming level 1");
+  it("vapor test chamber", function(done) {
+    var target = path.join(__dirname, "vapor-test.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
+      assert.strictEqual(map.width, 10);
+      assert.strictEqual(map.height, 10);
+      assert.strictEqual(map.layers[2].name, "objects");
+      assert.strictEqual(map.layers[2].objects.length, 3);
+
+      done();
+    });
+  });
+  it("lemming level 1", function(done) {
+    var target = path.join(__dirname, "lemming-level1.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
+      assert.strictEqual(map.width, 200);
+      assert.strictEqual(map.height, 100);
+      assert.strictEqual(map.layers[0].name, "Tiles");
+      assert.strictEqual(map.layers[0].tileAt(112, 49).properties.mine, "1");
+
+      done();
+    });
+  });
 });
 
 describe("tilesets", function() {
