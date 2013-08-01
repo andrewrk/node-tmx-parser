@@ -21,7 +21,7 @@ var STATE_START              = 0;
 var STATE_MAP                = 1;
 var STATE_COLLECT_PROPS      = 2;
 var STATE_WAIT_FOR_CLOSE     = 3;
-var STATE_MAP_TILESET        = 4;
+var STATE_TILESET            = 4;
 var STATE_TILE               = 5;
 var STATE_TILE_LAYER         = 6;
 var STATE_OBJECT_LAYER       = 7;
@@ -38,7 +38,7 @@ var STATE_COUNT              = 15;
 function parse(content, cb) {
   var parser = sax.parser();
   var map;
-
+  var topLevelObject = null;
   var state = STATE_START;
   var states = new Array(STATE_COUNT);
   var waitForCloseNextState = 0;
@@ -46,10 +46,16 @@ function parse(content, cb) {
   var propertiesObject = null;
   var propertiesNextState = 0;
   var tileIndex = 0;
+  var tileSet = null;
+  var tileSetNextState = 0;
+  var tile;
+  var layer;
+  var object;
   states[STATE_START] = {
     opentag: function(tag) {
       if (tag.name === 'MAP') {
         map = new TmxMap();
+        topLevelObject = map;
         map.version = tag.attributes.VERSION;
         map.orientation = tag.attributes.ORIENTATION;
         map.width = int(tag.attributes.WIDTH);
@@ -59,6 +65,11 @@ function parse(content, cb) {
         map.backgroundColor = tag.attributes.BACKGROUNDCOLOR;
 
         state = STATE_MAP;
+      } else if (tag.name === 'TILESET') {
+        tileSet = new TileSet();
+        topLevelObject = tileSet;
+        state = STATE_TILESET;
+        tileSetNextState = STATE_START;
       } else {
         waitForClose();
       }
@@ -68,23 +79,23 @@ function parse(content, cb) {
   };
   states[STATE_MAP] = {
     opentag: function(tag) {
-      var layer;
       switch (tag.name) {
         case 'PROPERTIES':
           collectProperties(map.properties);
           break;
         case 'TILESET':
-          var ts = new TileSet();
-          ts.firstGid = int(tag.attributes.FIRSTGID);
-          ts.source = tag.attributes.SOURCE;
-          ts.name = tag.attributes.NAME;
-          ts.tileWidth = int(tag.attributes.TILEWIDTH);
-          ts.tileHeight = int(tag.attributes.TILEHEIGHT);
-          ts.spacing = int(tag.attributes.SPACING);
-          ts.margin = int(tag.attributes.MARGIN);
+          tileSet = new TileSet();
+          tileSet.firstGid = int(tag.attributes.FIRSTGID);
+          tileSet.source = tag.attributes.SOURCE;
+          tileSet.name = tag.attributes.NAME;
+          tileSet.tileWidth = int(tag.attributes.TILEWIDTH);
+          tileSet.tileHeight = int(tag.attributes.TILEHEIGHT);
+          tileSet.spacing = int(tag.attributes.SPACING);
+          tileSet.margin = int(tag.attributes.MARGIN);
 
-          map.tileSets.push(ts);
-          state = STATE_MAP_TILESET;
+          map.tileSets.push(tileSet);
+          state = STATE_TILESET;
+          tileSetNextState = STATE_MAP;
           break;
         case 'LAYER':
           layer = new TileLayer(map);
@@ -119,31 +130,30 @@ function parse(content, cb) {
     closetag: noop,
     text: noop,
   };
-  states[STATE_MAP_TILESET] = {
+  states[STATE_TILESET] = {
     opentag: function(tag) {
-      var lastTileSet = map.tileSets[map.tileSets.length - 1];
       switch (tag.name) {
         case 'TILEOFFSET':
-          lastTileSet.tileOffset.x = int(tag.attributes.X);
-          lastTileSet.tileOffset.y = int(tag.attributes.Y);
+          tileSet.tileOffset.x = int(tag.attributes.X);
+          tileSet.tileOffset.y = int(tag.attributes.Y);
           waitForClose();
           break;
         case 'PROPERTIES':
-          collectProperties(lastTileSet.properties);
+          collectProperties(tileSet.properties);
           break;
         case 'IMAGE':
-          lastTileSet.image = collectImage(tag);
+          tileSet.image = collectImage(tag);
           break;
         case 'TERRAINTYPES':
           // TODO
           waitForClose();
           break;
         case 'TILE':
-          var tile = new Tile();
+          tile = new Tile();
           tile.id = int(tag.attributes.ID);
           tile.terrain = tag.attributes.TERRAIN;
           tile.probability = float(tag.attributes.PROBABILITY);
-          lastTileSet.tiles.push(tile);
+          tileSet.tiles.push(tile);
           state = STATE_TILE;
           break;
         default:
@@ -151,7 +161,7 @@ function parse(content, cb) {
       }
     },
     closetag: function(name) {
-      state = STATE_MAP;
+      state = tileSetNextState;
     },
     text: noop,
   };
@@ -179,26 +189,23 @@ function parse(content, cb) {
   };
   states[STATE_TILE] = {
     opentag: function(tag) {
-      var lastTileSet = map.tileSets[map.tileSets.length - 1];
-      var lastTile = lastTileSet.tiles[lastTileSet.tiles.length - 1];
       if (tag.name === 'PROPERTIES') {
-        collectProperties(lastTile.properties);
+        collectProperties(tile.properties);
       } else if (tag.name === 'IMAGE') {
-        lastTile.image = collectImage(tag);
+        tile.image = collectImage(tag);
       } else {
         waitForClose();
       }
     },
     closetag: function(name) {
-      state = STATE_MAP_TILESET
+      state = STATE_TILESET
     },
     text: noop,
   };
   states[STATE_TILE_LAYER] = {
     opentag: function(tag) {
       if (tag.name === 'PROPERTIES') {
-        var lastLayer = map.layers[map.layers.length - 1];
-        collectProperties(lastLayer.properties);
+        collectProperties(layer.properties);
       } else if (tag.name === 'DATA') {
         var dataEncoding = tag.attributes.ENCODING;
         var dataCompression = tag.attributes.COMPRESSION;
@@ -242,21 +249,20 @@ function parse(content, cb) {
   };
   states[STATE_OBJECT_LAYER] = {
     opentag: function(tag) {
-      var lastLayer = map.layers[map.layers.length - 1];
       if (tag.name === 'PROPERTIES') {
-        collectProperties(lastLayer.properties);
+        collectProperties(layer.properties);
       } else if (tag.name === 'OBJECT') {
-        var obj = new TmxObject();
-        obj.name = tag.attributes.NAME;
-        obj.type = tag.attributes.TYPE;
-        obj.x = int(tag.attributes.X);
-        obj.y = int(tag.attributes.Y);
-        obj.width = int(tag.attributes.WIDTH, 0);
-        obj.height = int(tag.attributes.HEIGHT, 0);
-        obj.rotation = float(tag.attributes.ROTATION, 0);
-        obj.gid = int(tag.attributes.GID);
-        obj.visible = bool(tag.attributes.VISIBLE, true);
-        lastLayer.objects.push(obj);
+        object = new TmxObject();
+        object.name = tag.attributes.NAME;
+        object.type = tag.attributes.TYPE;
+        object.x = int(tag.attributes.X);
+        object.y = int(tag.attributes.Y);
+        object.width = int(tag.attributes.WIDTH, 0);
+        object.height = int(tag.attributes.HEIGHT, 0);
+        object.rotation = float(tag.attributes.ROTATION, 0);
+        object.gid = int(tag.attributes.GID);
+        object.visible = bool(tag.attributes.VISIBLE, true);
+        layer.objects.push(object);
         state = STATE_OBJECT;
       } else {
         waitForClose();
@@ -269,11 +275,10 @@ function parse(content, cb) {
   };
   states[STATE_IMAGE_LAYER] = {
     opentag: function(tag) {
-      var lastLayer = map.layers[map.layers.length - 1];
       if (tag.name === 'PROPERTIES') {
-        collectProperties(lastLayer.properties);
+        collectProperties(layer.properties);
       } else if (tag.name === 'IMAGE') {
-        lastLayer.image = collectImage(tag);
+        layer.image = collectImage(tag);
       } else {
         waitForClose();
       }
@@ -285,26 +290,24 @@ function parse(content, cb) {
   };
   states[STATE_OBJECT] = {
     opentag: function(tag) {
-      var lastLayer = map.layers[map.layers.length - 1];
-      var lastObject = lastLayer.objects[lastLayer.objects.length - 1];
       switch (tag.name) {
         case 'PROPERTIES':
-          collectProperties(lastObject.properties);
+          collectProperties(object.properties);
           break;
         case 'ELLIPSE':
-          lastObject.ellipse = true;
+          object.ellipse = true;
           waitForClose();
           break;
         case 'POLYGON':
-          lastObject.polygon = parsePoints(tag.attributes.POINTS);
+          object.polygon = parsePoints(tag.attributes.POINTS);
           waitForClose();
           break;
         case 'POLYLINE':
-          lastObject.polyline = parsePoints(tag.attributes.POINTS);
+          object.polyline = parsePoints(tag.attributes.POINTS);
           waitForClose();
           break;
         case 'IMAGE':
-          lastObject.image = collectImage(tag);
+          object.image = collectImage(tag);
           break;
         default:
           waitForClose();
@@ -394,22 +397,20 @@ function parse(content, cb) {
     states[state].text(text);
   };
   parser.onend = function() {
-    cb(null, map);
+    cb(null, topLevelObject);
   };
   parser.write(content).close();
 
   function saveTile(gid) {
-    var lastLayer = map.layers[map.layers.length - 1];
-
-    lastLayer.horizontalFlips[tileIndex] = !!(gid & FLIPPED_HORIZONTALLY_FLAG);
-    lastLayer.verticalFlips[tileIndex]   = !!(gid & FLIPPED_VERTICALLY_FLAG);
-    lastLayer.diagonalFlips[tileIndex]   = !!(gid & FLIPPED_DIAGONALLY_FLAG);
+    layer.horizontalFlips[tileIndex] = !!(gid & FLIPPED_HORIZONTALLY_FLAG);
+    layer.verticalFlips[tileIndex]   = !!(gid & FLIPPED_VERTICALLY_FLAG);
+    layer.diagonalFlips[tileIndex]   = !!(gid & FLIPPED_DIAGONALLY_FLAG);
 
     gid &= ~(FLIPPED_HORIZONTALLY_FLAG |
              FLIPPED_VERTICALLY_FLAG |
              FLIPPED_DIAGONALLY_FLAG);
 
-    lastLayer.tiles[tileIndex] = gid;
+    layer.tiles[tileIndex] = gid;
 
     tileIndex += 1;
   }
