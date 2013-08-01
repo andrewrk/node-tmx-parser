@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="100" height="100" tilewidth="32" tileheight="32">
+ <objectgroup name="Object Layer 1" width="100" height="100">
+  <object name="Ellipse" x="40" y="346" width="140" height="156">
+   <ellipse/>
+  </object>
+  <object name="Polygon" x="205" y="163">
+   <polygon points="0,0 131,9 38,-112 -83,-47"/>
+  </object>
+  <object name="Polyline" x="353" y="279">
+   <polyline points="0,0 98,64 77,165 180,150 257,-7 148,-76"/>
+  </object>
+ </objectgroup>
+</map>

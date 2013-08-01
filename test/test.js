@@ -59,10 +59,33 @@ describe("tilesets", function() {
   it("multiple tilesets");
 });
 
-describe("misc.", function() {
-  it("ellipse object");
-  it("polygon object");
-  it("polyline object");
+describe("weird shapes", function() {
+  it("ellipse, polygon, polyline", function(done) {
+    var target = path.join(__dirname, "weird-shapes.tmx");
+    tmx.parseFile(target, function(err, map) {
+      assert.strictEqual(map.layers[0].objects[0].name, "Ellipse");
+      assert.strictEqual(map.layers[0].objects[0].ellipse, true);
+
+      assert.strictEqual(map.layers[0].objects[1].name, "Polygon");
+      assert.deepEqual(map.layers[0].objects[1].polygon, [
+        {x: 0, y: 0},
+        {x: 131, y: 9},
+        {x: 38, y: -112},
+        {x: -83, y: -47},
+      ]);
+
+      assert.strictEqual(map.layers[0].objects[2].name, "Polyline");
+      assert.deepEqual(map.layers[0].objects[2].polyline, [
+        {x: 0, y: 0},
+        {x: 98, y: 64},
+        {x: 77, y: 165},
+        {x: 180, y: 150},
+        {x: 257, y: -7},
+        {x: 148, y: -76},
+      ]);
+      done();
+    });
+  });
 });
 
 function generateEncodingTypeTest(filename) {
