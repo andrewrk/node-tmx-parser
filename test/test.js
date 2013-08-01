@@ -16,7 +16,19 @@ describe("real world examples", function() {
 });
 
 describe("tilesets", function() {
-  it("ability to parse a tileset");
+  it("ability to parse a tileset", function(done) {
+    var target = path.join(__dirname, "tiles.tsx");
+    tmx.parseFile(target, function(err, tileSet) {
+      if (err) return done(err);
+
+      assert.strictEqual(tileSet.image.height, 192);
+      assert.strictEqual(tileSet.tiles.length, 30);
+      assert.strictEqual(tileSet.tiles[0].properties.name, "DirtRampRight");
+      assert.strictEqual(tileSet.tiles[5].properties.solid, "1");
+
+      done();
+    });
+  });
   it("embedded tileset", function(done) {
     var target = path.join(__dirname, "embedded-tileset.tmx");
     tmx.parseFile(target, function(err, map) {
