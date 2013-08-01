@@ -17,7 +17,33 @@ describe("real world examples", function() {
 
 describe("tilesets", function() {
   it("ability to parse a tileset");
-  it("embedded tileset");
+  it("embedded tileset", function(done) {
+    var target = path.join(__dirname, "embedded-tileset.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+      assert.strictEqual(map.tileSets.length, 1);
+      assert.strictEqual(map.tileSets[0].properties.derp, "herp");
+      assert.strictEqual(map.tileSets[0].image.width, 265);
+
+      assert.strictEqual(map.tileSets[0].terrainTypes.length, 4);
+      assert.strictEqual(map.tileSets[0].terrainTypes[0].name, "brick");
+      assert.strictEqual(map.tileSets[0].terrainTypes[0].tile, 9);
+      assert.strictEqual(map.tileSets[0].terrainTypes[0].properties.happiness, "yes");
+      assert.strictEqual(map.tileSets[0].terrainTypes[1].name, "gravel");
+      assert.strictEqual(map.tileSets[0].terrainTypes[2].name, "rock");
+      assert.strictEqual(map.tileSets[0].terrainTypes[3].name, "sand");
+
+      assert.strictEqual(map.tileSets[0].tiles.length, 40);
+      assert.strictEqual(map.tileSets[0].tiles[0].id, 0);
+
+      assert.strictEqual(map.tileSets[0].tiles[0].terrain.length, 4);
+      assert.strictEqual(map.tileSets[0].tiles[0].terrain[0],
+        map.tileSets[0].terrainTypes[3]);
+
+      assert.strictEqual(map.tileSets[0].tiles[9].properties.brickcenter, "true");
+      done();
+    });
+  });
   it("external tileset");
   it("multiple tilesets");
 });

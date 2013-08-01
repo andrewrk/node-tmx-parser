@@ -12,6 +12,7 @@ exports.TileLayer = TileLayer;
 exports.ObjectLayer = ObjectLayer;
 exports.ImageLayer = ImageLayer;
 exports.TmxObject = TmxObject;
+exports.Terrain = Terrain;
 
 var FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 var FLIPPED_VERTICALLY_FLAG   = 0x40000000;
@@ -32,8 +33,10 @@ var STATE_TILE_DATA_CSV      = 11;
 var STATE_TILE_DATA_B64_RAW  = 12;
 var STATE_TILE_DATA_B64_GZIP = 13;
 var STATE_TILE_DATA_B64_ZLIB = 14;
+var STATE_TERRAIN_TYPES      = 15;
+var STATE_TERRAIN            = 16;
 
-var STATE_COUNT              = 15;
+var STATE_COUNT              = 17;
 
 function parse(content, cb) {
   var parser = sax.parser();
@@ -51,6 +54,7 @@ function parse(content, cb) {
   var tile;
   var layer;
   var object;
+  var terrain;
   states[STATE_START] = {
     opentag: function(tag) {
       if (tag.name === 'MAP') {
@@ -66,10 +70,8 @@ function parse(content, cb) {
 
         state = STATE_MAP;
       } else if (tag.name === 'TILESET') {
-        tileSet = new TileSet();
+        collectTileSet(tag, STATE_START);
         topLevelObject = tileSet;
-        state = STATE_TILESET;
-        tileSetNextState = STATE_START;
       } else {
         waitForClose();
       }
@@ -84,18 +86,8 @@ function parse(content, cb) {
           collectProperties(map.properties);
           break;
         case 'TILESET':
-          tileSet = new TileSet();
-          tileSet.firstGid = int(tag.attributes.FIRSTGID);
-          tileSet.source = tag.attributes.SOURCE;
-          tileSet.name = tag.attributes.NAME;
-          tileSet.tileWidth = int(tag.attributes.TILEWIDTH);
-          tileSet.tileHeight = int(tag.attributes.TILEHEIGHT);
-          tileSet.spacing = int(tag.attributes.SPACING);
-          tileSet.margin = int(tag.attributes.MARGIN);
-
+          collectTileSet(tag, STATE_MAP);
           map.tileSets.push(tileSet);
-          state = STATE_TILESET;
-          tileSetNextState = STATE_MAP;
           break;
         case 'LAYER':
           layer = new TileLayer(map);
@@ -145,13 +137,15 @@ function parse(content, cb) {
           tileSet.image = collectImage(tag);
           break;
         case 'TERRAINTYPES':
-          // TODO
-          waitForClose();
+          state = STATE_TERRAIN_TYPES;
           break;
         case 'TILE':
           tile = new Tile();
           tile.id = int(tag.attributes.ID);
-          tile.terrain = tag.attributes.TERRAIN;
+          if (tag.attributes.TERRAIN) {
+            var indexes = tag.attributes.TERRAIN.split(",");
+            tile.terrain = indexes.map(resolveTerrain);
+          }
           tile.probability = float(tag.attributes.PROBABILITY);
           tileSet.tiles.push(tile);
           state = STATE_TILE;
@@ -329,8 +323,7 @@ function parse(content, cb) {
     closetag: function(name) {
       state = STATE_TILE_LAYER;
     },
-    text: function(text) {
-    },
+    text: noop,
   };
   states[STATE_TILE_DATA_CSV] = {
     opentag: function(tag) {
@@ -385,6 +378,36 @@ function parse(content, cb) {
       // TODO
     },
   };
+  states[STATE_TERRAIN_TYPES] = {
+    opentag: function(tag) {
+      if (tag.name === 'TERRAIN') {
+        terrain = new Terrain();
+        terrain.name = tag.attributes.NAME;
+        terrain.tile = int(tag.attributes.TILE);
+        tileSet.terrainTypes.push(terrain);
+        state = STATE_TERRAIN;
+      } else {
+        waitForClose();
+      }
+    },
+    closetag: function(name) {
+      state = STATE_TILESET;
+    },
+    text: noop,
+  };
+  states[STATE_TERRAIN] = {
+    opentag: function(tag) {
+      if (tag.name === 'PROPERTIES') {
+        collectProperties(terrain.properties);
+      } else {
+        waitForClose();
+      }
+    },
+    closetag: function(name) {
+      state = STATE_TERRAIN_TYPES;
+    },
+    text: noop,
+  };
 
   parser.onerror = cb;
   parser.onopentag = function(tag) {
@@ -400,6 +423,10 @@ function parse(content, cb) {
     cb(null, topLevelObject);
   };
   parser.write(content).close();
+
+  function resolveTerrain(terrainIndexStr) {
+    return tileSet.terrainTypes[parseInt(terrainIndexStr, 10)];
+  }
 
   function saveTile(gid) {
     layer.horizontalFlips[tileIndex] = !!(gid & FLIPPED_HORIZONTALLY_FLAG);
@@ -426,6 +453,20 @@ function parse(content, cb) {
     // TODO: read possible <data>
     waitForClose();
     return img;
+  }
+
+  function collectTileSet(tag, nextState) {
+    tileSet = new TileSet();
+    tileSet.firstGid = int(tag.attributes.FIRSTGID);
+    tileSet.source = tag.attributes.SOURCE;
+    tileSet.name = tag.attributes.NAME;
+    tileSet.tileWidth = int(tag.attributes.TILEWIDTH);
+    tileSet.tileHeight = int(tag.attributes.TILEHEIGHT);
+    tileSet.spacing = int(tag.attributes.SPACING);
+    tileSet.margin = int(tag.attributes.MARGIN);
+
+    state = STATE_TILESET;
+    tileSetNextState = nextState;
   }
 
   function collectProperties(obj) {
@@ -518,6 +559,7 @@ function TileSet() {
   this.properties = {};
   this.image = null;
   this.tiles = [];
+  this.terrainTypes = [];
 }
 
 function Image() {
@@ -530,7 +572,7 @@ function Image() {
 
 function Tile() {
   this.id = 0;
-  this.terrain = null;
+  this.terrain = [];
   this.probability = null;
   this.properties = {};
   this.image = null;
@@ -595,4 +637,10 @@ function TmxObject() {
   this.ellipse = false;
   this.polygon = null;
   this.polyline = null;
+}
+
+function Terrain() {
+  this.name = "";
+  this.tile = 0;
+  this.properties = {};
 }
