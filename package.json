@@ -1,6 +1,6 @@
 {
   "name": "tmx-parser",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "parse and load tiled maps",
   "main": "index.js",
   "scripts": {
