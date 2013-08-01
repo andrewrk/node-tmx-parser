@@ -1,10 +1,12 @@
 var sax = require('sax');
 var fs = require('fs');
+var Batch = require('batch2');
+var path = require('path');
 
 exports.readFile = defaultReadFile;
 exports.parseFile = parseFile;
 exports.parse = parse;
-exports.TmxMap = TmxMap;
+exports.Map = Map;
 exports.TileSet = TileSet;
 exports.Image = Image;
 exports.Tile = Tile;
@@ -38,7 +40,8 @@ var STATE_TERRAIN            = 16;
 
 var STATE_COUNT              = 17;
 
-function parse(content, cb) {
+function parse(content, pathToFile, cb) {
+  var pathToDir = path.dirname(pathToFile);
   var parser = sax.parser();
   var map;
   var topLevelObject = null;
@@ -55,10 +58,15 @@ function parse(content, cb) {
   var layer;
   var object;
   var terrain;
+  // this holds the numerical tile ids
+  // later we use it to resolve the real tiles
+  var unresolvedLayers = [];
+  var unresolvedLayer;
+  var unresolvedTileSets = [];
   states[STATE_START] = {
     opentag: function(tag) {
       if (tag.name === 'MAP') {
-        map = new TmxMap();
+        map = new Map();
         topLevelObject = map;
         map.version = tag.attributes.VERSION;
         map.orientation = tag.attributes.ORIENTATION;
@@ -96,6 +104,11 @@ function parse(content, cb) {
           layer.opacity = float(tag.attributes.OPACITY, 1);
           layer.visible = bool(tag.attributes.VISIBLE, true);
           map.layers.push(layer);
+          unresolvedLayer = {
+            layer: layer,
+            tiles: new Array(map.width * map.height),
+          };
+          unresolvedLayers.push(unresolvedLayer);
           state = STATE_TILE_LAYER;
           break;
         case 'OBJECTGROUP':
@@ -316,9 +329,8 @@ function parse(content, cb) {
     opentag: function(tag) {
       if (tag.name === 'TILE') {
         saveTile(int(tag.attributes.GID, 0));
-      } else {
-        waitForClose();
       }
+      waitForClose();
     },
     closetag: function(name) {
       state = STATE_TILE_LAYER;
@@ -420,7 +432,25 @@ function parse(content, cb) {
     states[state].text(text);
   };
   parser.onend = function() {
-    cb(null, topLevelObject);
+    if (unresolvedTileSets.length === 0) {
+      cb(null, topLevelObject);
+      return;
+    }
+    var batch = new Batch();
+    unresolvedTileSets.forEach(function(unresolvedTileSet) {
+      batch.push(function(cb) {
+        resolveTileSet(unresolvedTileSet, cb);
+      });
+    });
+    batch.end(function(err, results) {
+      if (err) {
+        cb(err);
+        return;
+      }
+      // use the resolved tile sets to resolve the layers
+      unresolvedLayers.forEach(resolveLayer);
+      cb(null, topLevelObject);
+    });
   };
   parser.write(content).close();
 
@@ -437,7 +467,7 @@ function parse(content, cb) {
              FLIPPED_VERTICALLY_FLAG |
              FLIPPED_DIAGONALLY_FLAG);
 
-    layer.tiles[tileIndex] = gid;
+    unresolvedLayer.tiles[tileIndex] = gid;
 
     tileIndex += 1;
   }
@@ -465,6 +495,8 @@ function parse(content, cb) {
     tileSet.spacing = int(tag.attributes.SPACING);
     tileSet.margin = int(tag.attributes.MARGIN);
 
+    if (tileSet.source) unresolvedTileSets.push(tileSet);
+
     state = STATE_TILESET;
     tileSetNextState = nextState;
   }
@@ -489,6 +521,32 @@ function parse(content, cb) {
     parser.onend = null;
     cb(err);
   }
+
+  function resolveTileSet(unresolvedTileSet, cb) {
+    var target = path.join(pathToDir, unresolvedTileSet.source);
+    parseFile(target, function(err, resolvedTileSet) {
+      if (err) {
+        cb(err);
+        return;
+      }
+      resolvedTileSet.mergeTo(unresolvedTileSet);
+      cb();
+    });
+  }
+
+  function resolveLayer(unresolvedLayer) {
+    for (var i = 0; i < unresolvedLayer.tiles.length; i += 1) {
+      var globalTileId = unresolvedLayer.tiles[i];
+      for (var tileSetIndex = map.tileSets.length - 1;
+          tileSetIndex >= 0; tileSetIndex -= 1)
+      {
+        var tileSet = map.tileSets[tileSetIndex];
+        if (tileSet.firstGid <= globalTileId) {
+          unresolvedLayer.layer.tiles[i] = tileSet.tiles[globalTileId - tileSet.firstGid];
+        }
+      }
+    }
+  }
 }
 
 function defaultReadFile(name, cb) {
@@ -500,7 +558,7 @@ function parseFile(name, cb) {
     if (err) {
       cb(err);
     } else {
-      parse(content, cb);
+      parse(content, name, cb);
     }
   });
 }
@@ -533,7 +591,7 @@ function float(value, defaultValue) {
   return value == null ? defaultValue : parseFloat(value, 10);
 }
 
-function TmxMap() {
+function Map() {
   this.version = null;
   this.orientation = "orthogonal";
   this.width = 0;
@@ -561,6 +619,21 @@ function TileSet() {
   this.tiles = [];
   this.terrainTypes = [];
 }
+
+TileSet.prototype.mergeTo = function(other) {
+  other.firstGid = this.firstGid == null ? other.firstGid : this.firstGid;
+  other.source = this.source == null ? other.source : this.source;
+  other.name = this.name == null ? other.name : this.name;
+  other.tileWidth = this.tileWidth == null ? other.tileWidth : this.tileWidth;
+  other.tileHeight = this.tileHeight == null ? other.tileHeight : this.tileHeight;
+  other.spacing = this.spacing == null ? other.spacing : this.spacing;
+  other.margin = this.margin == null ? other.margin : this.margin;
+  other.tileOffset = this.tileOffset == null ? other.tileOffset : this.tileOffset;
+  other.properties = this.properties == null ? other.properties : this.properties;
+  other.image = this.image == null ? other.image : this.image;
+  other.tiles = this.tiles == null ? other.tiles : this.tiles;
+  other.terrainTypes = this.terrainTypes == null ? other.terrainTypes : this.terrainTypes;
+};
 
 function Image() {
   this.format = null;
@@ -592,16 +665,8 @@ function TileLayer(map) {
   this.diagonalFlips = new Array(tileCount);
 }
 
-// TODO instead of this, resolve all tiles when loading the level.
 TileLayer.prototype.tileAt = function(x, y) {
-  var globalTileId = this.tiles[y * this.map.width + x];
-  for (var i = this.map.tileSets.length - 1; i >= 0; i -= 1) {
-    var tileSet = this.map.tileSets[i];
-    if (tileSet.firstGid <= globalTileId) {
-      return tileSet.tiles[globalTileId - tileSet.firstGid];
-    }
-  }
-  return globalTileId
+  return this.tiles[y * this.map.width + x];
 };
 
 function ObjectLayer() {

@@ -91,7 +91,10 @@ function validateLemmingLevel3(map) {
   assert.strictEqual(map.layers.length, 4);
   assert.ok(map.layers[0] instanceof tmx.TileLayer);
   assert.strictEqual(map.layers[0].name, "Main");
-  //assert.strictEqual(map.layers[0].tileAt(35, 29), 5);
+  assert.strictEqual(map.layers[0].tileAt(35, 28),
+      map.tileSets[0].tiles[5]);
+  assert.strictEqual(map.layers[0].tileAt(67, 42).properties.name, "PlusOne");
+  assert.strictEqual(map.layers[1].tileAt(96, 23).properties.ladder, "1");
 
   assert.ok(map.layers[1] instanceof tmx.TileLayer);
   assert.strictEqual(map.layers[1].name, "Ladders");
