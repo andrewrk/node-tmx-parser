@@ -2,6 +2,7 @@ var sax = require('sax');
 var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
+var Pend = require('pend');
 
 exports.readFile = defaultReadFile;
 exports.parseFile = parseFile;
@@ -585,41 +586,6 @@ function parse(content, pathToFile, cb) {
     }
   }
 }
-
-function Pend() {
-  this.pending = 0;
-  this.listeners = [];
-  this.error = null;
-}
-
-Pend.prototype.go = function(fn) {
-  pendGo(this, fn);
-};
-
-function pendGo(self, fn) {
-  self.pending += 1;
-  fn(onCb);
-  function onCb(err) {
-    self.error = self.error || err;
-    self.pending -= 1;
-    if (self.pending < 0) throw new Error("Callback called twice.");
-    if (self.pending === 0) {
-      self.listeners.forEach(cbListener);
-      self.listeners = [];
-    }
-  }
-  function cbListener(listener) {
-    listener(self.error);
-  }
-}
-
-Pend.prototype.wait = function(cb) {
-  if (this.pending === 0) {
-    cb(this.error);
-  } else {
-    this.listeners.push(cb);
-  }
-};
 
 function defaultReadFile(name, cb) {
   fs.readFile(name, { encoding: 'utf8' }, cb);
