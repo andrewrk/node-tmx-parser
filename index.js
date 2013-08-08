@@ -3,6 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 var Pend = require('pend');
+var bops = require('bops');
 
 exports.readFile = defaultReadFile;
 exports.parseFile = parseFile;
@@ -366,7 +367,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      unpackTileBytes(new Buffer(text.trim(), 'base64'));
+      unpackTileBytes(bops.from(text.trim(), 'base64'));
     },
   };
   states[STATE_TILE_DATA_B64_GZIP] = {
@@ -377,7 +378,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var zipped = new Buffer(text.trim(), 'base64');
+      var zipped = bops.from(text.trim(), 'base64');
       var oldUnresolvedLayer = unresolvedLayer;
       var oldLayer = layer;
       pend.go(function(cb) {
@@ -402,7 +403,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var zipped = new Buffer(text.trim(), 'base64');
+      var zipped = bops.from(text.trim(), 'base64');
       var oldUnresolvedLayer = unresolvedLayer;
       var oldLayer = layer;
       pend.go(function(cb) {
