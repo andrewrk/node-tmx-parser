@@ -583,7 +583,7 @@ function parse(content, pathToFile, cb) {
     }
     tileIndex = 0;
     for (var i = 0; i < expectedCount; i += 4) {
-      saveTile(buf.readUInt32LE(i));
+      saveTile(readUInt32LE(buf, i));
     }
   }
 }
@@ -611,6 +611,16 @@ function parsePoints(str) {
       y: xy[1],
     };
   });
+}
+
+// needed until https://github.com/chrisdickinson/bops/pull/7 is resolved
+function readUInt32LE(buf, offset) {
+  offset = ~~offset;
+  var val = 0;
+  val = buf[offset + 2] << 16;
+  val |= buf[offset + 1] << 8;
+  val |= buf[offset];
+  return val + (buf[offset + 3] << 24 >>> 0);
 }
 
 function noop() {}
