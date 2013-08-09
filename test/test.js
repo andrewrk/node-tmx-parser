@@ -104,6 +104,8 @@ describe("weird shapes", function() {
   it("ellipse, polygon, polyline", function(done) {
     var target = path.join(__dirname, "weird-shapes.tmx");
     tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
       assert.strictEqual(map.layers[0].objects[0].name, "Ellipse");
       assert.strictEqual(map.layers[0].objects[0].ellipse, true);
 
@@ -124,6 +126,25 @@ describe("weird shapes", function() {
         {x: 257, y: -7},
         {x: 148, y: -76},
       ]);
+      done();
+    });
+  });
+});
+
+describe("implicit tiles", function() {
+  it("creates implicit tiles", function(done) {
+    var target = path.join(__dirname, "implicit_tiles.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+      assert.strictEqual(map.tileSets[0].tiles.length, 2);
+
+      assert.strictEqual(map.layers[0].tileAt(0, 0).id, 0);
+      assert.strictEqual(map.layers[0].tileAt(1, 0).id, 1);
+      assert.strictEqual(map.layers[0].tileAt(1, 1).id, 0);
+      assert.strictEqual(map.layers[0].tileAt(1, 2).id, 1);
+      assert.strictEqual(map.layers[0].tileAt(2, 2).id, 0);
+      assert.strictEqual(map.layers[0].tileAt(3, 2).id, 1);
+      assert.strictEqual(map.layers[0].tileAt(3, 3).id, 0);
       done();
     });
   });

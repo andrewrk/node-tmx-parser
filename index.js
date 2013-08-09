@@ -567,7 +567,15 @@ function parse(content, pathToFile, cb) {
       {
         var tileSet = map.tileSets[tileSetIndex];
         if (tileSet.firstGid <= globalTileId) {
-          unresolvedLayer.layer.tiles[i] = tileSet.tiles[globalTileId - tileSet.firstGid];
+          var tileId = globalTileId - tileSet.firstGid;
+          var tile = tileSet.tiles[tileId];
+          if (!tile) {
+            // implicit tile
+            tile = new Tile();
+            tile.id = tileId;
+            tileSet.tiles[tileId] = tile;
+          }
+          unresolvedLayer.layer.tiles[i] = tile;
           break;
         }
       }
