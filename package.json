@@ -16,7 +16,6 @@
     "url": "https://github.com/superjoe30/node-tmx-parser/issues"
   },
   "dependencies": {
-    "bops": "~0.1.1",
     "pend": "~1.1.1",
     "sax": "~0.6.0"
   },

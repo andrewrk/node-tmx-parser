@@ -3,7 +3,6 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 var Pend = require('pend');
-var bops = require('bops');
 
 exports.readFile = defaultReadFile;
 exports.parseFile = parseFile;
@@ -367,7 +366,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      unpackTileBytes(bops.from(text.trim(), 'base64'));
+      unpackTileBytes(new Buffer(text.trim(), 'base64'));
     },
   };
   states[STATE_TILE_DATA_B64_GZIP] = {
@@ -378,7 +377,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var zipped = bops.from(text.trim(), 'base64');
+      var zipped = new Buffer(text.trim(), 'base64');
       var oldUnresolvedLayer = unresolvedLayer;
       var oldLayer = layer;
       pend.go(function(cb) {
@@ -403,7 +402,7 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var zipped = bops.from(text.trim(), 'base64');
+      var zipped = new Buffer(text.trim(), 'base64');
       var oldUnresolvedLayer = unresolvedLayer;
       var oldLayer = layer;
       pend.go(function(cb) {
@@ -591,7 +590,7 @@ function parse(content, pathToFile, cb) {
     }
     tileIndex = 0;
     for (var i = 0; i < expectedCount; i += 4) {
-      saveTile(readUInt32LE(buf, i));
+      saveTile(buf.readUInt32LE(i));
     }
   }
 }
@@ -619,16 +618,6 @@ function parsePoints(str) {
       y: xy[1],
     };
   });
-}
-
-// needed until https://github.com/chrisdickinson/bops/pull/7 is resolved
-function readUInt32LE(buf, offset) {
-  offset = ~~offset;
-  var val = 0;
-  val = buf[offset + 2] << 16;
-  val |= buf[offset + 1] << 8;
-  val |= buf[offset];
-  return val + (buf[offset + 3] << 24 >>> 0);
 }
 
 function noop() {}
