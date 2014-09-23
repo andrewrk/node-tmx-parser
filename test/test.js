@@ -92,7 +92,9 @@ describe("tilesets", function() {
       assert.strictEqual(map.tileSets[1].tiles[4].properties.good, "yes");
 
       assert.strictEqual(map.layers[0].tileAt(16, 12), map.tileSets[0].tiles[0]);
+      assert.strictEqual(map.layers[0].tileAt(16, 12).gid, 1);
       assert.strictEqual(map.layers[0].tileAt(17, 12), map.tileSets[1].tiles[4]);
+      assert.strictEqual(map.layers[0].tileAt(17, 12).gid, 10);
       assert.equal(map.layers[0].tileAt(20, 12), null);
 
       done();
