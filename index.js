@@ -574,6 +574,7 @@ function parse(content, pathToFile, cb) {
             tile.id = tileId;
             tileSet.tiles[tileId] = tile;
           }
+          tile.gid = globalTileId;
           unresolvedLayer.layer.tiles[i] = tile;
           break;
         }
