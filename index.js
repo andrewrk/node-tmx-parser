@@ -24,6 +24,7 @@ var FLIPPED_DIAGONALLY_FLAG   = 0x20000000;
 var STATE_START              = 0;
 var STATE_MAP                = 1;
 var STATE_COLLECT_PROPS      = 2;
+var STATE_COLLECT_AIMATIONS      = 18;
 var STATE_WAIT_FOR_CLOSE     = 3;
 var STATE_TILESET            = 4;
 var STATE_TILE               = 5;
@@ -185,6 +186,21 @@ function parse(content, pathToFile, cb) {
     },
     text: noop,
   };
+  states[STATE_COLLECT_AIMATIONS] = {
+    opentag: function(tag) {
+      if (tag.name === 'FRAME') {
+          animationsObject.push({
+              'tileId': tag.attributes.TILEID,
+              'duration': tag.attributes.DURATION
+          });
+      }
+      waitForClose();
+    },
+    closetag: function(name) {
+      state = propertiesNextState;
+    },
+    text: noop,
+  };
   states[STATE_WAIT_FOR_CLOSE] = {
     opentag: function(tag) {
       waitForCloseOpenCount += 1;
@@ -201,6 +217,8 @@ function parse(content, pathToFile, cb) {
         collectProperties(tile.properties);
       } else if (tag.name === 'IMAGE') {
         tile.image = collectImage(tag);
+     } else if (tag.name === 'ANIMATION') {
+        tile.animation = collectAnimations(tile.animations);
       } else {
         waitForClose();
       }
@@ -531,6 +549,12 @@ function parse(content, pathToFile, cb) {
     state = STATE_COLLECT_PROPS;
   }
 
+  function collectAnimations(obj) {
+    animationsObject = obj;
+    animationsNextState = state;
+    state = STATE_COLLECT_AIMATIONS;
+  }
+
   function waitForClose() {
     waitForCloseNextState = state;
     state = STATE_WAIT_FOR_CLOSE;
@@ -695,6 +719,7 @@ function Tile() {
   this.terrain = [];
   this.probability = null;
   this.properties = {};
+  this.animations = [];
   this.image = null;
 }
 
