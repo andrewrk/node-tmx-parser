@@ -21,26 +21,25 @@ var FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 var FLIPPED_VERTICALLY_FLAG   = 0x40000000;
 var FLIPPED_DIAGONALLY_FLAG   = 0x20000000;
 
-var STATE_START              = 0;
-var STATE_MAP                = 1;
-var STATE_COLLECT_PROPS      = 2;
-var STATE_COLLECT_AIMATIONS      = 18;
-var STATE_WAIT_FOR_CLOSE     = 3;
-var STATE_TILESET            = 4;
-var STATE_TILE               = 5;
-var STATE_TILE_LAYER         = 6;
-var STATE_OBJECT_LAYER       = 7;
-var STATE_OBJECT             = 8;
-var STATE_IMAGE_LAYER        = 9;
-var STATE_TILE_DATA_XML      = 10;
-var STATE_TILE_DATA_CSV      = 11;
-var STATE_TILE_DATA_B64_RAW  = 12;
-var STATE_TILE_DATA_B64_GZIP = 13;
-var STATE_TILE_DATA_B64_ZLIB = 14;
-var STATE_TERRAIN_TYPES      = 15;
-var STATE_TERRAIN            = 16;
-
-var STATE_COUNT              = 17;
+var STATE_COUNT = 0;
+var STATE_START              = STATE_COUNT++;
+var STATE_MAP                = STATE_COUNT++;
+var STATE_COLLECT_PROPS      = STATE_COUNT++;
+var STATE_COLLECT_AIMATIONS  = STATE_COUNT++;
+var STATE_WAIT_FOR_CLOSE     = STATE_COUNT++;
+var STATE_TILESET            = STATE_COUNT++;
+var STATE_TILE               = STATE_COUNT++;
+var STATE_TILE_LAYER         = STATE_COUNT++;
+var STATE_OBJECT_LAYER       = STATE_COUNT++;
+var STATE_OBJECT             = STATE_COUNT++;
+var STATE_IMAGE_LAYER        = STATE_COUNT++;
+var STATE_TILE_DATA_XML      = STATE_COUNT++;
+var STATE_TILE_DATA_CSV      = STATE_COUNT++;
+var STATE_TILE_DATA_B64_RAW  = STATE_COUNT++;
+var STATE_TILE_DATA_B64_GZIP = STATE_COUNT++;
+var STATE_TILE_DATA_B64_ZLIB = STATE_COUNT++;
+var STATE_TERRAIN_TYPES      = STATE_COUNT++;
+var STATE_TERRAIN            = STATE_COUNT++;
 
 function parse(content, pathToFile, cb) {
   var pathToDir = path.dirname(pathToFile);
