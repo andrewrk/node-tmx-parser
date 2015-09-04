@@ -25,7 +25,7 @@ var STATE_COUNT = 0;
 var STATE_START              = STATE_COUNT++;
 var STATE_MAP                = STATE_COUNT++;
 var STATE_COLLECT_PROPS      = STATE_COUNT++;
-var STATE_COLLECT_AIMATIONS  = STATE_COUNT++;
+var STATE_COLLECT_ANIMATIONS = STATE_COUNT++;
 var STATE_WAIT_FOR_CLOSE     = STATE_COUNT++;
 var STATE_TILESET            = STATE_COUNT++;
 var STATE_TILE               = STATE_COUNT++;
@@ -52,6 +52,8 @@ function parse(content, pathToFile, cb) {
   var waitForCloseOpenCount = 0;
   var propertiesObject = null;
   var propertiesNextState = 0;
+  var animationsObject = null;
+  var animationsNextState = 0;
   var tileIndex = 0;
   var tileSet = null;
   var tileSetNextState = 0;
@@ -185,7 +187,7 @@ function parse(content, pathToFile, cb) {
     },
     text: noop,
   };
-  states[STATE_COLLECT_AIMATIONS] = {
+  states[STATE_COLLECT_ANIMATIONS] = {
     opentag: function(tag) {
       if (tag.name === 'FRAME') {
           animationsObject.push({
@@ -196,7 +198,7 @@ function parse(content, pathToFile, cb) {
       waitForClose();
     },
     closetag: function(name) {
-      state = propertiesNextState;
+      state = animationsNextState;
     },
     text: noop,
   };
@@ -551,7 +553,7 @@ function parse(content, pathToFile, cb) {
   function collectAnimations(obj) {
     animationsObject = obj;
     animationsNextState = state;
-    state = STATE_COLLECT_AIMATIONS;
+    state = STATE_COLLECT_ANIMATIONS;
   }
 
   function waitForClose() {
