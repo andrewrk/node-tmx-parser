@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="17" height="11" tilewidth="26" tileheight="26" nextobjectid="1">
+ <tileset firstgid="1" name="effect_fire" tilewidth="48" tileheight="48" tilecount="16">
+  <tileoffset x="-12" y="0"/>
+  <image source="effect_fire.png" width="384" height="96"/>
+  <tile id="0">
+   <animation>
+    <frame tileid="0" duration="100"/>
+    <frame tileid="1" duration="100"/>
+    <frame tileid="2" duration="100"/>
+    <frame tileid="3" duration="100"/>
+    <frame tileid="4" duration="100"/>
+    <frame tileid="5" duration="100"/>
+   </animation>
+  </tile>
+ </tileset>
+ <layer name="fire" width="17" height="11">
+  <data encoding="base64" compression="zlib">
+   eJxjYBi8gJFE8VFAHzBU4wUACMwABQ==
+  </data>
+ </layer>
+</map>

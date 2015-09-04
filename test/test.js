@@ -100,6 +100,17 @@ describe("tilesets", function() {
       done();
     });
   });
+  it("animation in tilesets", function(done) {
+    var target = path.join(__dirname, "animation.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+      assert.strictEqual(map.width, 17);
+      assert.strictEqual(map.height, 11);
+      assert.strictEqual(map.layers[0].name, "fire");
+      assert.strictEqual(map.tileSets[0].tiles[0].animations[5].duration, "100");
+      done();
+    });
+  });
 });
 
 describe("weird shapes", function() {
