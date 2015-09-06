@@ -363,16 +363,9 @@ function parse(content, pathToFile, cb) {
       state = STATE_TILE_LAYER;
     },
     text: function(text) {
-      var buffer = "";
-      for (var i = 0; i < text.length; i += 1) {
-        var c = text[i];
-        if (c === ',') {
-          saveTile(parseInt(buffer, 10));
-          buffer = "";
-        } else {
-          buffer += c;
-        }
-      }
+      text.split(",").forEach(function(c) {
+        saveTile(parseInt(c, 10));
+      });
     },
   };
   states[STATE_TILE_DATA_B64_RAW] = {
