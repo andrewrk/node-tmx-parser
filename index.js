@@ -126,6 +126,8 @@ function parse(content, pathToFile, cb) {
         case 'IMAGELAYER':
           layer = new ImageLayer();
           layer.name = tag.attributes.NAME;
+          layer.x = int(tag.attributes.X);
+          layer.y = int(tag.attributes.Y);
           layer.opacity = float(tag.attributes.OPACITY, 1);
           layer.visible = bool(tag.attributes.VISIBLE, true);
           map.layers.push(layer);
@@ -752,6 +754,8 @@ function ObjectLayer() {
 function ImageLayer() {
   this.type = "image";
   this.name = null;
+  this.x = 0;
+  this.y = 0;
   this.opacity = 1;
   this.visible = true;
   this.properties = {};
