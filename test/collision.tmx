@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="17" height="11" tilewidth="26" tileheight="26" nextobjectid="9">
+ <tileset firstgid="1" name="rocks_tileset" tilewidth="32" tileheight="32" tilecount="32">
+  <tileoffset x="-3" y="0"/>
+  <image source="rocks.png" width="128" height="256"/>
+  <tile id="0">
+   <objectgroup draworder="index">
+    <object id="0" x="0.5" y="3" width="24.5" height="24.9375"/>
+   </objectgroup>
+  </tile>
+  <tile id="1">
+   <objectgroup draworder="index">
+    <object id="0" x="12.0625" y="13.9375">
+     <ellipse/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="2">
+   <objectgroup draworder="index">
+    <object id="0" x="3.25" y="26">
+     <polygon points="0,0 1,-17.4375 13.3125,-18.375 22.375,-8.4375 22.0625,1.875 9.375,3.375"/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="4">
+   <objectgroup draworder="index">
+    <object id="0" x="6.1875" y="3.875">
+     <polyline points="0,0 14.5625,1.4375 12.9375,5.625 22.5625,7.4375 16.75,14.25 20.75,19.3125 13.375,23.125 2,22.3125 6.5,14.375 -3.875,15.3125 1.0625,7.6875 -2.3125,3.375 2.3125,4"/>
+    </object>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <layer name="rocks" width="17" height="11">
+  <data encoding="base64" compression="zlib">
+   eJxjYBhcgIlK6pmJVItNHTJgJCBPSD8y4CfAxwcIhQs58tj8hss/hMKBGPsGGgAAWyQAPA==
+  </data>
+ </layer>
+</map>

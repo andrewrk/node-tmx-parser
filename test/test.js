@@ -100,7 +100,7 @@ describe("tilesets", function() {
       done();
     });
   });
-  it("animation in tilesets", function(done) {
+  it("animated tiles", function(done) {
     var target = path.join(__dirname, "animation.tmx");
     tmx.parseFile(target, function(err, map) {
       if (err) return done(err);
@@ -108,6 +108,16 @@ describe("tilesets", function() {
       assert.strictEqual(map.height, 11);
       assert.strictEqual(map.layers[0].name, "fire");
       assert.strictEqual(map.tileSets[0].tiles[0].animations[5].duration, "100");
+      done();
+    });
+  });
+  it("objectgroups in tiles", function(done) {
+    var target = path.join(__dirname, "collision.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+      assert.strictEqual(map.tileSets[0].tiles[0].objectGroups[0].width, 24);
+      assert.strictEqual(map.tileSets[0].tiles[1].objectGroups[0].ellipse, true);
+      assert.strictEqual(map.tileSets[0].tiles[2].objectGroups[0].y, 26);
       done();
     });
   });
