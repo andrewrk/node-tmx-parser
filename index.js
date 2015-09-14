@@ -26,7 +26,7 @@ var STATE_START                = STATE_COUNT++;
 var STATE_MAP                  = STATE_COUNT++;
 var STATE_COLLECT_PROPS        = STATE_COUNT++;
 var STATE_COLLECT_ANIMATIONS   = STATE_COUNT++;
-var STATE_COLLECT_OBJECTGROUPS = STATE_COUNT++;
+var STATE_COLLECT_OBJECT_GROUPS = STATE_COUNT++;
 var STATE_WAIT_FOR_CLOSE       = STATE_COUNT++;
 var STATE_TILESET              = STATE_COUNT++;
 var STATE_TILE                 = STATE_COUNT++;
@@ -56,8 +56,8 @@ function parse(content, pathToFile, cb) {
   var propertiesNextState = 0;
   var animationsObject = null;
   var animationsNextState = 0;
-  var objectgroupsObject = null;
-  var objectgroupsNextState = 0;
+  var objectGroupsObject = null;
+  var objectGroupsNextState = 0;
   var tileIndex = 0;
   var tileSet = null;
   var tileSetNextState = 0;
@@ -208,7 +208,7 @@ function parse(content, pathToFile, cb) {
     },
     text: noop,
   };
-  states[STATE_COLLECT_OBJECTGROUPS] = {
+  states[STATE_COLLECT_OBJECT_GROUPS] = {
     opentag: function(tag) {
       if (tag.name === 'OBJECT') {
         object = new TmxObject();
@@ -221,14 +221,14 @@ function parse(content, pathToFile, cb) {
         object.rotation = float(tag.attributes.ROTATION, 0);
         object.gid = int(tag.attributes.GID);
         object.visible = bool(tag.attributes.VISIBLE, true);
-        objectgroupsObject.push(object);
+        objectGroupsObject.push(object);
         state = STATE_TILE_OBJECT;
       } else {
         waitForClose();
       }
     },
     closetag: function(name) {
-      state = objectgroupsNextState;
+      state = objectGroupsNextState;
     },
     text: noop
   };
@@ -251,7 +251,7 @@ function parse(content, pathToFile, cb) {
       } else if (tag.name === 'ANIMATION') {
         tile.animation = collectAnimations(tile.animations);
       } else if (tag.name === 'OBJECTGROUP') {
-        tile.objectgroup = collectObjectgroups(tile.objectgroups);
+        tile.objectGroup = collectObjectGroups(tile.objectGroups);
       } else {
         waitForClose();
       }
@@ -403,7 +403,7 @@ function parse(content, pathToFile, cb) {
       }
     },
     closetag: function(name) {
-      state = STATE_COLLECT_OBJECTGROUPS;
+      state = STATE_COLLECT_OBJECT_GROUPS;
     },
     text: noop
   };
@@ -611,10 +611,10 @@ function parse(content, pathToFile, cb) {
     state = STATE_COLLECT_ANIMATIONS;
   }
 
-  function collectObjectgroups(obj) {
-    objectgroupsObject = obj;
-    objectgroupsNextState = state;
-    state = STATE_COLLECT_OBJECTGROUPS;
+  function collectObjectGroups(obj) {
+    objectGroupsObject = obj;
+    objectGroupsNextState = state;
+    state = STATE_COLLECT_OBJECT_GROUPS;
   }
 
   function waitForClose() {
@@ -782,7 +782,7 @@ function Tile() {
   this.probability = null;
   this.properties = {};
   this.animations = [];
-  this.objectgroups = [];
+  this.objectGroups = [];
   this.image = null;
 }
 

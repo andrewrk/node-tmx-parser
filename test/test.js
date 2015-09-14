@@ -115,9 +115,9 @@ describe("tilesets", function() {
     var target = path.join(__dirname, "collision.tmx");
     tmx.parseFile(target, function(err, map) {
       if (err) return done(err);
-      assert.strictEqual(map.tileSets[0].tiles[0].objectgroups[0].width, 24);
-      assert.strictEqual(map.tileSets[0].tiles[1].objectgroups[0].ellipse, true);
-      assert.strictEqual(map.tileSets[0].tiles[2].objectgroups[0].y, 26);
+      assert.strictEqual(map.tileSets[0].tiles[0].objectGroups[0].width, 24);
+      assert.strictEqual(map.tileSets[0].tiles[1].objectGroups[0].ellipse, true);
+      assert.strictEqual(map.tileSets[0].tiles[2].objectGroups[0].y, 26);
       done();
     });
   });
