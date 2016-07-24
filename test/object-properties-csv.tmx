@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="200" height="70" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <objectgroup name="Object Layer 1" width="200" height="70">
+  <object type="Button" gid="14" x="704" y="96">
+   <properties>
+    <property name="color" value="green"/>
+    <property name="growing" type="bool" value="true"/>
+    <property name="dead" type="bool" value="false"/>
+    <property name="height" type="int" value="2"/>
+    <property name="timer" type="int" value="-2"/>
+    <property name="pi" type="float" value="3.1400000000000001"/>
+   </properties>
+  </object>
+</map>

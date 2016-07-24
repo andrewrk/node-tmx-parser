@@ -184,7 +184,10 @@ function parse(content, pathToFile, cb) {
   states[STATE_COLLECT_PROPS] = {
     opentag: function(tag) {
       if (tag.name === 'PROPERTY') {
-        propertiesObject[tag.attributes.NAME] = tag.attributes.VALUE;
+        propertiesObject[tag.attributes.NAME] = parseProperty(
+          tag.attributes.VALUE,
+          tag.attributes.TYPE
+        );
       }
       waitForClose();
     },
@@ -705,6 +708,20 @@ function parsePoints(str) {
       y: xy[1],
     };
   });
+}
+
+function parseProperty(value, type) {
+  switch (type) {
+    case 'int':
+      return parseInt(value, 10);
+    case 'float':
+      return parseFloat(value, 2);
+    case 'bool':
+      return value === 'true';
+    default:
+      return value;
+  }
+
 }
 
 function noop() {}
