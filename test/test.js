@@ -173,6 +173,44 @@ describe("implicit tiles", function() {
   });
 });
 
+describe("custom property types", function() {
+  it("parses strings correctly", function(done) {
+    var target = path.join(__dirname, "object-properties-csv.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
+      var object = map.layers[0].objects[0];
+      assert.strictEqual(object.properties.color, "green");
+      done();
+    });
+  });
+
+  it("parses booleans correctly", function(done) {
+    var target = path.join(__dirname, "object-properties-csv.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
+      var object = map.layers[0].objects[0];
+      assert.strictEqual(object.properties.growing, true);
+      assert.strictEqual(object.properties.dead, false);
+      done();
+    });
+  });
+
+  it("parses numbers correctly", function(done) {
+    var target = path.join(__dirname, "object-properties-csv.tmx");
+    tmx.parseFile(target, function(err, map) {
+      if (err) return done(err);
+
+      var object = map.layers[0].objects[0];
+      assert.strictEqual(object.properties.height, 2);
+      assert.strictEqual(object.properties.timer, -2);
+      assert.strictEqual(object.properties.pi, 3.14);
+      done();
+    });
+  });
+});
+
 function generateEncodingTypeTest(filename) {
   var target = path.join(__dirname, filename);
   return function(done) {
