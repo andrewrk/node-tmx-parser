@@ -110,6 +110,8 @@ function parse(content, pathToFile, cb) {
           layer.name = tag.attributes.NAME;
           layer.opacity = float(tag.attributes.OPACITY, 1);
           layer.visible = bool(tag.attributes.VISIBLE, true);
+          layer.offsetx = float(tag.attributes.OFFSETX, 0);
+          layer.offsety = float(tag.attributes.OFFSETY, 0);
           map.layers.push(layer);
           unresolvedLayer = {
             layer: layer,
@@ -124,6 +126,8 @@ function parse(content, pathToFile, cb) {
           layer.color = tag.attributes.COLOR;
           layer.opacity = float(tag.attributes.OPACITY, 1);
           layer.visible = bool(tag.attributes.VISIBLE, true);
+          layer.offsetx = float(tag.attributes.OFFSETX, 0);
+          layer.offsety = float(tag.attributes.OFFSETY, 0);
           map.layers.push(layer);
           state = STATE_OBJECT_LAYER;
           break;
@@ -134,6 +138,8 @@ function parse(content, pathToFile, cb) {
           layer.y = int(tag.attributes.Y);
           layer.opacity = float(tag.attributes.OPACITY, 1);
           layer.visible = bool(tag.attributes.VISIBLE, true);
+          layer.offsetx = float(tag.attributes.OFFSETX, 0);
+          layer.offsety = float(tag.attributes.OFFSETY, 0);
           map.layers.push(layer);
           state = STATE_IMAGE_LAYER;
           break;
@@ -815,6 +821,8 @@ function TileLayer(map) {
   this.horizontalFlips = new Array(tileCount);
   this.verticalFlips = new Array(tileCount);
   this.diagonalFlips = new Array(tileCount);
+  this.offsetx = 0;
+  this.offsety = 0;
 }
 
 TileLayer.prototype.tileAt = function(x, y) {
@@ -833,6 +841,8 @@ function ObjectLayer() {
   this.visible = true;
   this.properties = {};
   this.objects = [];
+  this.offsetx = 0;
+  this.offsety = 0;
 }
 
 function ImageLayer() {
@@ -844,6 +854,8 @@ function ImageLayer() {
   this.visible = true;
   this.properties = {};
   this.image = null;
+  this.offsetx = 0;
+  this.offsety = 0;
 }
 
 function TmxObject() {
