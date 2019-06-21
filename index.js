@@ -686,7 +686,18 @@ function parse(content, pathToFile, cb) {
 }
 
 function defaultReadFile(name, cb) {
-  fs.readFile(name, { encoding: 'utf8' }, cb);
+  var isBrowser = typeof window !== 'undefined';
+
+  if (isBrowser) {
+    fetch(name)
+      .then(response => response.text())
+      .then(data => {
+        cb(undefined, data);
+      })
+      .catch(e => cb(e));
+  } else {
+    fs.readFile(name, { encoding: 'utf8' }, cb);
+  }
 }
 
 function parseFile(name, cb) {
