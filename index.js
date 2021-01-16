@@ -356,6 +356,9 @@ function parse(content, pathToFile, cb) {
         case 'PROPERTIES':
           collectProperties(object.properties);
           break;
+        case 'TEXT':
+          object.text = collectText(tag.attributes);
+          break;
         case 'ELLIPSE':
           object.ellipse = true;
           waitForClose();
@@ -377,8 +380,17 @@ function parse(content, pathToFile, cb) {
     },
     closetag: function(name) {
       state = STATE_OBJECT_LAYER;
+      if (name === 'TEXT') {
+        state = STATE_OBJECT;
+      } else {
+        state = STATE_OBJECT_LAYER;
+      }
     },
-    text: noop,
+    text: function(text) {
+      if (object.text) {
+        object.text.main = text
+      }
+    },
   };
   states[STATE_TILE_OBJECT] = {
     opentag: function(tag) {
@@ -606,6 +618,15 @@ function parse(content, pathToFile, cb) {
     propertiesObject = obj;
     propertiesNextState = state;
     state = STATE_COLLECT_PROPS;
+  }
+
+  function collectText(tagAttributes) {
+    const text = {};
+    for (const attributeName in tagAttributes) {
+      text[attributeName.toLowerCase()] = tagAttributes[attributeName]
+    };
+
+    return text;
   }
 
   function collectAnimations(obj) {
@@ -860,6 +881,7 @@ function TmxObject() {
   this.ellipse = false;
   this.polygon = null;
   this.polyline = null;
+  this.text = {};
 }
 
 function Terrain() {
