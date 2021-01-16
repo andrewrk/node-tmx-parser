@@ -43,9 +43,9 @@ var STATE_TILE_DATA_B64_ZLIB   = STATE_COUNT++;
 var STATE_TERRAIN_TYPES        = STATE_COUNT++;
 var STATE_TERRAIN              = STATE_COUNT++;
 
-function parse(content, pathToFile, cb) {
+function parse(content, pathToFile, cb, strict = false, options = {}) {
   var pathToDir = path.dirname(pathToFile);
-  var parser = sax.parser();
+  var parser = sax.parser(strict, options);
   var map;
   var topLevelObject = null;
   var state = STATE_START;
