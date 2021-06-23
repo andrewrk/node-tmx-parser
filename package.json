@@ -1,9 +1,14 @@
 {
   "name": "tiled-tmx-parser",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "parse and load tiled maps",
   "main": "index.js",
-  "files": ["index.d.ts", "index.js", "LICENSE", "README.md"],
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "test": "mocha --reporter spec test/test.js"
   },
