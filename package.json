@@ -1,8 +1,9 @@
 {
-  "name": "@imallic/tmx-parser",
-  "version": "1.6.0",
+  "name": "tiled-tmx-parser",
+  "version": "1.6.1",
   "description": "parse and load tiled maps",
   "main": "index.js",
+  "files": ["index.d.ts", "index.js", "LICENSE", "README.md"],
   "scripts": {
     "test": "mocha --reporter spec test/test.js"
   },
