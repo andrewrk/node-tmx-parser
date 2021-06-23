@@ -215,6 +215,7 @@ function parse(content, pathToFile, cb) {
     opentag: function(tag) {
       if (tag.name === 'OBJECT') {
         object = new TmxObject();
+        object.id = int(tag.attributes.ID);
         object.name = tag.attributes.NAME;
         object.type = tag.attributes.TYPE;
         object.x = int(tag.attributes.X);
@@ -315,6 +316,7 @@ function parse(content, pathToFile, cb) {
         collectProperties(layer.properties);
       } else if (tag.name === 'OBJECT') {
         object = new TmxObject();
+        object.id = int(tag.attributes.ID);
         object.name = tag.attributes.NAME;
         object.type = tag.attributes.TYPE;
         object.x = int(tag.attributes.X);
