@@ -168,6 +168,9 @@ function parse(content, pathToFile, cb) {
             var indexes = tag.attributes.TERRAIN.split(",");
             tile.terrain = indexes.map(resolveTerrain);
           }
+          if (tag.attributes.TYPE) {
+            tile.type = Number(tag.attributes.TYPE);
+          }
           tile.probability = float(tag.attributes.PROBABILITY);
           tileSet.tiles[tile.id] = tile;
           state = STATE_TILE;
@@ -795,6 +798,7 @@ function Image() {
 
 function Tile() {
   this.id = 0;
+  this.type = 0;
   this.terrain = [];
   this.probability = null;
   this.properties = {};
