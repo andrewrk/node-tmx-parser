@@ -1,6 +1,6 @@
 {
   "name": "tiled-tmx-parser",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "parse and load tiled maps",
   "main": "index.js",
   "files": [
@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/superjoe30/node-tmx-parser.git"
+    "url": "https://github.com/buzzyboy/node-tmx-parser"
   },
-  "author": "Andrew Kelley <superjoe30@gmail.com>",
+  "author": "Buzzyboy <codyallenbrooks12@yahoo.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/superjoe30/node-tmx-parser/issues"
+    "url": "https://github.com/buzzyboy/node-tmx-parser/issues"
   },
   "dependencies": {
     "pend": "~1.2.0",

@@ -1,5 +1,13 @@
 # tmx parser
 
+Fork of https://github.com/andrewrk/node-tmx-parser
+
+I needed a few changes to the source so I decided to create my own fork on a 
+seemingly dead project.
+
+I have added TS type definitions for convenience.
+
+
 [Tiled Map Editor](http://www.mapeditor.org/) map parser made to work
 in node.js or [browserify](http://browserify.org/).
 

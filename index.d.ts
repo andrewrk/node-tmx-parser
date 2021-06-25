@@ -7,7 +7,7 @@ declare module 'tiled-tmx-parser' {
 
 	export class Map<TMapProps = Properties, TTileLayerProps = Properties, TTileProps = Properties, TObjectLayerProps = Properties, TObjectProps = Properties, TImageLayerProps = Properties> {
 		public version: string;
-		public orientation: 'orthogonal' | string;
+		public orientation: 'orthogonal' | 'isometric' | 'staggered' | 'hexagonal' | string;
 		public width: number;
 		public height: number;
 		public tileWidth: number;
@@ -99,6 +99,7 @@ declare module 'tiled-tmx-parser' {
 
 	export class TmxObject<T = Properties> {
 		constructor();
+
 		id: number;
 		name: null | string;
 		type: null | string;
