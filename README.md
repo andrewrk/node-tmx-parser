@@ -6,7 +6,7 @@ in node.js or [browserify](http://browserify.org/).
 ## Usage
 
 ```js
-var tmx = require('tmx-parser');
+var tmx = require('tmx-parser-typescript');
 
 // if you have a string (pathToFile is for resolving tilesets if necessary)
 tmx.parse(xmlString, pathToFile, function(err, map) {
